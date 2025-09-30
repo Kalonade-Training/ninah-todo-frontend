@@ -1,8 +1,9 @@
 import React from 'react';
+import 'react-day-picker/dist/style.css';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Calendar } from '../../components/ui/calendar';
+import { DayPicker } from 'react-day-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Badge } from '../../components/ui/badge';
 import { CalendarIcon, X, Filter } from 'lucide-react';
@@ -133,7 +134,7 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
+                                <DayPicker
                                     mode="single"
                                     selected={filters.due_from ? new Date(filters.due_from) : undefined}
                                     onSelect={(date) => updateFilter('due_from', date ? format(date, 'yyyy-MM-dd') : undefined)}

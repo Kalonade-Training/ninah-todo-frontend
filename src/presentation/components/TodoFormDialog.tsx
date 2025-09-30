@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import 'react-day-picker/dist/style.css';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
-import { Calendar } from '../../components/ui/calendar';
+import { DayPicker } from 'react-day-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { CalendarIcon, X } from 'lucide-react';
@@ -140,7 +141,7 @@ export const TodoFormDialog: React.FC<TodoFormDialogProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
+                  <DayPicker
                     mode="single"
                     selected={formData.due_date ?? undefined}
                     onSelect={(date) => handleChange('due_date', date)}
