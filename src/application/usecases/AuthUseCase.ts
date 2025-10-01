@@ -24,7 +24,7 @@ export class AuthUseCase {
 
         const emailRegex = /^[^\s@]+@[^s\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(request.email)) {
-            throw new Error('Be more creative!')
+            throw new Error('Choose a valid email address!')
         }
 
         return this.userRepository.register(request);
