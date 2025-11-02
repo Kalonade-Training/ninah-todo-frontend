@@ -11,8 +11,8 @@ export const useTodos = (filter?: TodoListFilter) => {
     const queryClient = useQueryClient();
 
     const { data: todos = [], isLoading, error } = useQuery({
-        queryKey: ['todos', filter],
-        queryFn: () => todoUseCase.getTodos(filter),
+        queryKey: ['todos'],
+        queryFn: () => todoUseCase.getTodos(),
     });
 
     const createTodoMutation = useMutation({
