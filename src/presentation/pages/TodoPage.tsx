@@ -110,9 +110,8 @@ export const TodoPage: React.FC = () => {
         try {
             await duplicateTodo(id);
         } catch (error: any) {
-            if (error.message) {
-                alert(error.message);
-            }
+            const errorMessage = error?.response?.data?.error || error?.message || 'Please make the original title shorter to duplicate todo.';
+            alert(errorMessage);
         }
     };
 
