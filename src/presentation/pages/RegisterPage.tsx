@@ -25,8 +25,7 @@ export const RegisterPage: React.FC = () => {
       await register(formData);
       navigate('/login');
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.error || err?.message || 'Registration failed. Please try again.';
-      setError(errorMessage);
+      setError(err.message || 'Registration failed. Please try again.');
     }
   };
 

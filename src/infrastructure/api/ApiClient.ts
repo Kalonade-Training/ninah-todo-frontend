@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { AxiosInstance, AxiosResponse } from "axios";
+import type { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 
 export class ApiClient {
     private client: AxiosInstance;
@@ -19,14 +19,16 @@ export class ApiClient {
             }
             return config;
         });
+        
         this.client.interceptors.response.use(
             (response) => response,
-            (error) => {
+            (error: AxiosError) => {
                 if (error.response?.status === 401) {
                     localStorage.removeItem('token');
                     window.location.href = '/login';
                 }
-                return Promise.reject(error);
+                const errorMessage = (error.response?.data as any)?.error || error.message;
+                return Promise.reject(new Error(errorMessage));
             }
         );
     }

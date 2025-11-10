@@ -16,9 +16,8 @@ interface TodoFiltersProps {
 }
 
 export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChange }) => {
-  // Local state for input values before applying
-  const [titleInput, setTitleInput] = useState(filters.title || '');
-  const [bodyInput, setBodyInput] = useState(filters.body || '');
+  const [titleInput, setTitleInput] = useState('');
+  const [bodyInput, setBodyInput] = useState('');
 
   const updateFilter = (key: keyof TodoListFilter, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -28,10 +27,6 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
     const newFilters = { ...filters };
     delete newFilters[key];
     onFiltersChange(newFilters);
-    
-    // Clear local state too
-    if (key === 'title') setTitleInput('');
-    if (key === 'body') setBodyInput('');
   };
 
   const clearAllFilters = () => {
@@ -40,34 +35,30 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
     setBodyInput('');
   };
 
-  const handleTitleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      updateFilter('title', titleInput || undefined);
-    }
-  };
-
-  const handleBodyKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      updateFilter('body', bodyInput || undefined);
-    }
-  };
-
-  const applyTextFilters = () => {
+  const applySearch = () => {
     const newFilters = { ...filters };
-    if (titleInput) {
-      newFilters.title = titleInput;
+
+    if (titleInput.trim()) {
+        newFilters.title = titleInput.trim();
     } else {
-      delete newFilters.title;
+        delete newFilters.title;
     }
-    if (bodyInput) {
-      newFilters.body = bodyInput;
+
+    if (bodyInput.trim()) {
+        newFilters.body = bodyInput.trim();
     } else {
-      delete newFilters.body;
+        delete newFilters.body;
     }
     onFiltersChange(newFilters);
   };
 
-  const hasActiveFilters = Object.keys(filters).some(key => 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        applySearch();
+    }
+  };
+
+  const hasActiveFilters = Object.keys(filters).some(key =>
     filters[key as keyof TodoListFilter] !== undefined && filters[key as keyof TodoListFilter] !== ''
   );
 
@@ -90,68 +81,41 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Title Search */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-600">Search in title (Press Enter)</label>
-          <div className="relative">
+      {/* Search Section */}
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Search in title</label>
             <Input
-              placeholder="Search titles..."
+              placeholder="Type and press Enter or click Search..."
               value={titleInput}
               onChange={(e) => setTitleInput(e.target.value)}
-              onKeyPress={handleTitleKeyPress}
+              onKeyPress={handleKeyPress}
             />
-            {filters.title && (
-              <button
-                onClick={() => {
-                  clearFilter('title');
-                  setTitleInput('');
-                }}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={14} />
-              </button>
-            )}
           </div>
-        </div>
 
-        {/* Body Search */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-600">Search in description (Press Enter)</label>
-          <div className="relative">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Search in description</label>
             <Input
-              placeholder="Search descriptions..."
+              placeholder="Type and press Enter or click Search..."
               value={bodyInput}
               onChange={(e) => setBodyInput(e.target.value)}
-              onKeyPress={handleBodyKeyPress}
+              onKeyPress={handleKeyPress}
             />
-            {filters.body && (
-              <button
-                onClick={() => {
-                  clearFilter('body');
-                  setBodyInput('');
-                }}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X size={14} />
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Search Button */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-600">&nbsp;</label>
-          <Button
-            onClick={applyTextFilters}
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            size="sm"
-          >
-            <Search size={14} className="mr-2" />
-            Search
-          </Button>
-        </div>
+        <Button
+          onClick={applySearch}
+          className="w-full md:w-auto bg-blue-600 hover:bg-blue-700"
+        >
+          <Search size={16} className="mr-2" />
+          Search
+        </Button>
+      </div>
 
+      {/* Other Filters Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t">
         {/* Completion Status */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-gray-600">Status</label>
@@ -211,6 +175,42 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
             )}
           </div>
         </div>
+
+        {/* Due Date To */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-gray-600">Due to</label>
+          <div className="flex gap-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                  size="sm"
+                >
+                  <CalendarIcon className="mr-2 h-3 w-3" />
+                  {filters.due_to ? format(new Date(filters.due_to), 'MMM dd') : 'To date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={filters.due_to ? new Date(filters.due_to) : undefined}
+                  onSelect={(date) => updateFilter('due_to', date ? format(date, 'yyyy-MM-dd') : undefined)}
+                />
+              </PopoverContent>
+            </Popover>
+            {filters.due_to && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => clearFilter('due_to')}
+                className="px-2"
+              >
+                <X size={14} />
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Active Filters */}
@@ -219,7 +219,10 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
           {filters.title && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Title: "{filters.title}"
-              <button onClick={() => clearFilter('title')}>
+              <button onClick={() => {
+                clearFilter('title');
+                setTitleInput('');
+              }}>
                 <X size={12} />
               </button>
             </Badge>
@@ -227,7 +230,10 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
           {filters.body && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Description: "{filters.body}"
-              <button onClick={() => clearFilter('body')}>
+              <button onClick={() => {
+                clearFilter('body');
+                setBodyInput('');
+              }}>
                 <X size={12} />
               </button>
             </Badge>
@@ -244,6 +250,14 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
             <Badge variant="secondary" className="flex items-center gap-1">
               Due from: {format(new Date(filters.due_from), 'MMM dd')}
               <button onClick={() => clearFilter('due_from')}>
+                <X size={12} />
+              </button>
+            </Badge>
+          )}
+          {filters.due_to && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              Due to: {format(new Date(filters.due_to), 'MMM dd')}
+              <button onClick={() => clearFilter('due_to')}>
                 <X size={12} />
               </button>
             </Badge>

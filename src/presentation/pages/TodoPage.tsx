@@ -28,97 +28,100 @@ export const TodoPage: React.FC = () => {
     isUpdating,
   } = useTodos();
 
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [todoToDelete, setTodoToDelete] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [todoToDelete, setTodoToDelete] = useState<string | null>(null);
+  const [duplicateError, setDuplicateError] = useState<string>('');
 
-    const filteredTodos = useMemo(() => {
-        return todos.filter(todo => {
-            if (filters.title && !todo.Title.toLowerCase().includes(filters.title.toLowerCase())) {
-                return false;
-            }
+  const filteredTodos = useMemo(() => {
+    return todos.filter(todo => {
+      if (filters.title && !todo.Title.toLowerCase().includes(filters.title.toLowerCase())) {
+        return false;
+      }
 
-            if (filters.body && !todo.Body.toLowerCase().includes(filters.body.toLowerCase())) {
-                return false;
-            }
+      if (filters.body && !todo.Body.toLowerCase().includes(filters.body.toLowerCase())) {
+        return false;
+      }
 
-            if (filters.completed !== undefined && todo.Completed !== filters.completed) {
-                return false;
-            }
+      if (filters.completed !== undefined && todo.Completed !== filters.completed) {
+        return false;
+      }
 
-            if (filters.due_from && todo.DueDate) {
-                const todoDate = new Date(todo.DueDate);
-                const filterDate = new Date(filters.due_from);
-                if (todoDate < filterDate) {
-                    return false;
-                }
-            }
-
-            if (filters.due_to && todo.DueDate) {
-                const todoDate = new Date(todo.DueDate);
-                const filterDate = new Date(filters.due_to);
-                if (todoDate > filterDate) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-    }, [todos, filters]);
-
-    const handleCreateTodo = async (data: CreateTodoRequest) => {
-        await createTodo(data);
-    };
-
-    const handleUpdateTodo = async (data: UpdateTodoRequest) => {
-        if (editingTodo) {
-            await updateTodo({ id: editingTodo.ID, request: data });
-            setEditingTodo(null);
+      if (filters.due_from && todo.DueDate) {
+        const todoDate = new Date(todo.DueDate);
+        const filterDate = new Date(filters.due_from);
+        if (todoDate < filterDate) {
+          return false;
         }
-    };
+      }
 
-    const handleEditTodo = (todo: Todo) => {
-        setEditingTodo(todo);
-        setDialogOpen(true);
-    };
-
-    const handleCloseDialog = () => {
-        setDialogOpen(false);
-        setEditingTodo(null);
-    };
-
-    const handleDeleteClick = (id: string) => {
-        setTodoToDelete(id);
-        setDeleteDialogOpen(true);
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (todoToDelete) {
-            await deleteTodo(todoToDelete);
-            setTodoToDelete(null);
-            setDeleteDialogOpen(false);
+      if (filters.due_to && todo.DueDate) {
+        const todoDate = new Date(todo.DueDate);
+        const filterDate = new Date(filters.due_to);
+        if (todoDate > filterDate) {
+          return false;
         }
-    };
+      }
 
-    const handleDeleteCancel = () => {
-        setTodoToDelete(null);
-        setDeleteDialogOpen(false);
-    };
+      return true;
+    });
+  }, [todos, filters]);
 
-    const handleDuplicate = async (id: string) => {
-        try {
-            await duplicateTodo(id);
-        } catch (error: any) {
-            const errorMessage = error?.response?.data?.error || error?.message || 'Please make the original title shorter to duplicate todo.';
-            alert(errorMessage);
-        }
-    };
+  const handleCreateTodo = async (data: CreateTodoRequest) => {
+    await createTodo(data);
+  };
 
-    const completedTodos = todos.filter(todo => todo.Completed);
-    const pendingTodos = todos.filter(todo => !todo.Completed);
+  const handleUpdateTodo = async (data: UpdateTodoRequest) => {
+    if (editingTodo) {
+      await updateTodo({ id: editingTodo.ID, request: data });
+      setEditingTodo(null);
+    }
+  };
 
-    if (isLoading) {
+  const handleEditTodo = (todo: Todo) => {
+    setEditingTodo(todo);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEditingTodo(null);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setTodoToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (todoToDelete) {
+      await deleteTodo(todoToDelete);
+      setTodoToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setTodoToDelete(null);
+    setDeleteDialogOpen(false);
+  };
+
+  const handleDuplicate = async (id: string) => {
+    setDuplicateError('');
+    try {
+      await duplicateTodo(id);
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to duplicate todo';
+      setDuplicateError(errorMsg);
+      setTimeout(() => setDuplicateError(''), 5000);
+    }
+  };
+
+  const completedTodos = filteredTodos.filter(todo => todo.Completed);
+  const pendingTodos = filteredTodos.filter(todo => !todo.Completed);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
@@ -171,6 +174,12 @@ export const TodoPage: React.FC = () => {
             <AlertDescription>
               {error.message || 'An error occurred while loading todos'}
             </AlertDescription>
+          </Alert>
+        )}
+
+        {duplicateError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{duplicateError}</AlertDescription>
           </Alert>
         )}
 
@@ -283,6 +292,7 @@ export const TodoPage: React.FC = () => {
           )}
         </div>
       </main>
+
       <TodoFormDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
@@ -290,6 +300,7 @@ export const TodoPage: React.FC = () => {
         todo={editingTodo}
         isSubmitting={isCreating || isUpdating}
       />
+
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onConfirm={handleDeleteConfirm}
