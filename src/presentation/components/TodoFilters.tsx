@@ -37,28 +37,30 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
 
   const applySearch = () => {
     const newFilters = { ...filters };
-
+    
     if (titleInput.trim()) {
-        newFilters.title = titleInput.trim();
+      newFilters.title = titleInput.trim();
     } else {
-        delete newFilters.title;
+      delete newFilters.title;
     }
-
+    
     if (bodyInput.trim()) {
-        newFilters.body = bodyInput.trim();
+      newFilters.body = bodyInput.trim();
     } else {
-        delete newFilters.body;
+      delete newFilters.body;
     }
+    
     onFiltersChange(newFilters);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-        applySearch();
+      e.preventDefault();
+      applySearch();
     }
   };
 
-  const hasActiveFilters = Object.keys(filters).some(key =>
+  const hasActiveFilters = Object.keys(filters).some(key => 
     filters[key as keyof TodoListFilter] !== undefined && filters[key as keyof TodoListFilter] !== ''
   );
 
@@ -82,40 +84,46 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
       </div>
 
       {/* Search Section */}
-      <div className="space-y-3">
+      <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+        <p className="text-xs text-blue-700 font-medium">
+          Type your search terms and press Enter or click the Search button
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Search in title</label>
+            <label className="text-xs font-medium text-gray-700">Search in title</label>
             <Input
-              placeholder="Type and press Enter or click Search..."
+              placeholder="Type title..."
               value={titleInput}
               onChange={(e) => setTitleInput(e.target.value)}
               onKeyPress={handleKeyPress}
+              className="bg-white"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Search in description</label>
+            <label className="text-xs font-medium text-gray-700">Search in description</label>
             <Input
-              placeholder="Type and press Enter or click Search..."
+              placeholder="Type description..."
               value={bodyInput}
               onChange={(e) => setBodyInput(e.target.value)}
               onKeyPress={handleKeyPress}
+              className="bg-white"
             />
           </div>
         </div>
 
         <Button
           onClick={applySearch}
-          className="w-full md:w-auto bg-blue-600 hover:bg-blue-700"
+          className="w-full bg-blue-600 hover:bg-blue-700"
+          size="sm"
         >
           <Search size={16} className="mr-2" />
-          Search
+          Search Todos
         </Button>
       </div>
 
       {/* Other Filters Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Completion Status */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-gray-600">Status</label>
@@ -192,7 +200,7 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
+                <DayPicker
                   mode="single"
                   selected={filters.due_to ? new Date(filters.due_to) : undefined}
                   onSelect={(date) => updateFilter('due_to', date ? format(date, 'yyyy-MM-dd') : undefined)}
