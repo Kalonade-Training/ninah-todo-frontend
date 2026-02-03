@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-day-picker/dist/style.css';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -16,10 +16,15 @@ interface TodoFiltersProps {
 }
 
 export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChange }) => {
-  const [titleInput, setTitleInput] = useState('');
-  const [bodyInput, setBodyInput] = useState('');
+  const [titleInput, setTitleInput] = useState(filters.title || '');
+  const [bodyInput, setBodyInput] = useState(filters.body || '');
 
-  const updateFilter = (key: keyof TodoListFilter, value: any) => {
+  useEffect(() => {
+    setTitleInput(filters.title || '');
+    setBodyInput(filters.body || '');
+  }, [filters.title, filters.body]);
+
+  const updateFilter = (key: keyof TodoListFilter, value: unknown) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 
@@ -37,13 +42,13 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
 
   const applySearch = () => {
     const newFilters = { ...filters };
-    
+
     if (titleInput.trim()) {
       newFilters.title = titleInput.trim();
     } else {
       delete newFilters.title;
     }
-    
+
     if (bodyInput.trim()) {
       newFilters.body = bodyInput.trim();
     } else {
@@ -53,7 +58,7 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
     onFiltersChange(newFilters);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       applySearch();
@@ -95,7 +100,7 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
               placeholder="Type title..."
               value={titleInput}
               onChange={(e) => setTitleInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               className="bg-white"
             />
           </div>
@@ -106,7 +111,7 @@ export const TodoFilters: React.FC<TodoFiltersProps> = ({ filters, onFiltersChan
               placeholder="Type description..."
               value={bodyInput}
               onChange={(e) => setBodyInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               className="bg-white"
             />
           </div>

@@ -22,7 +22,7 @@ export class AuthUseCase {
             throw new Error('Password must be at least 6 characters');
         }
 
-        const emailRegex = /^[^\s@]+@[^s\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(request.email)) {
             throw new Error('Choose a valid email address!')
         }

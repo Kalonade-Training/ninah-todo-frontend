@@ -22,15 +22,12 @@ export const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
   onCancel,
 }) => {
   return (
-    <AlertDialog open={open}>
+    <AlertDialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onCancel(); }}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure you want to delete this todo?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action is irreversible. Are you sure you want to delete this todo?
-            <br />
-            <br />
-            This action cannot be undone. This will permanently delete the todo.
+            This action cannot be undone. The todo will be permanently deleted.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

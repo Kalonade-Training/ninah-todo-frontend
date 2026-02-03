@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Button } from '../../components/ui/button';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Separator } from '../../components/ui/separator';
-import { Plus, LogOut, User } from 'lucide-react';
+import { Plus, LogOut, User, Search } from 'lucide-react';
 import { TodoCard } from '../components/TodoCard';
 import { TodoFormDialog } from '../components/TodoFormDialog';
 import { DeleteConfirmDialog } from '../components/DeleteConfirmDialog';
@@ -11,6 +11,9 @@ import { useAuth } from '../hooks/useAuth';
 import { useTodos } from '../hooks/useTodos';
 import type { TodoListFilter } from '../../domain/repositories/TodoRepository';
 import type { Todo, CreateTodoRequest, UpdateTodoRequest } from '../../domain/entities/Todo';
+
+const COPY_SUFFIX = 'のコピー';
+const MAX_TITLE_LEN = 50;
 
 export const TodoPage: React.FC = () => {
   const { currentUser, logout } = useAuth();
@@ -109,10 +112,24 @@ export const TodoPage: React.FC = () => {
 
   const handleDuplicate = async (id: string) => {
     setDuplicateError('');
+
+    const todo = todos.find(t => t.ID === id);
+    if (todo) {
+      const candidateTitle = todo.Title + COPY_SUFFIX;
+      const candidateLen = [...candidateTitle].length;
+      if (candidateLen > MAX_TITLE_LEN) {
+        setDuplicateError(
+          `Cannot duplicate: title would be ${candidateLen} characters after adding "${COPY_SUFFIX}" (max ${MAX_TITLE_LEN}). Please shorten the original title first.`
+        );
+        setTimeout(() => setDuplicateError(''), 5000);
+        return;
+      }
+    }
+
     try {
       await duplicateTodo(id);
-    } catch (error: any) {
-      const errorMsg = error.message || 'Failed to duplicate todo';
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to duplicate todo';
       setDuplicateError(errorMsg);
       setTimeout(() => setDuplicateError(''), 5000);
     }
@@ -146,7 +163,7 @@ export const TodoPage: React.FC = () => {
                 <p className="text-sm text-gray-500">Organize your life, one task at a time</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               {currentUser && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -278,7 +295,7 @@ export const TodoPage: React.FC = () => {
           {filteredTodos.length === 0 && todos.length > 0 && (
             <div className="text-center py-12">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl">🔍</span>
+                <Search size={32} className="text-gray-600" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No todos match your filters</h3>
               <p className="text-gray-600 mb-4">Try adjusting your search criteria</p>
