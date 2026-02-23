@@ -25,6 +25,7 @@ export const RegisterPage: React.FC = () => {
       await register(formData);
       navigate('/login');
     } catch (err: any) {
+      console.log(err.message)
       setError(err.message || 'Registration failed. Please try again.');
     }
   };
